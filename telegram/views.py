@@ -19,9 +19,11 @@ class ConnectUser(APIView):
 
         try:
             site = Site.objects.get(access_key=access_key)
+            if not site.is_active:
+                return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
             if timezone.now() > site.expire_at:
                 return Response({'error': 'پشتیبانی این سایت به پایان رسیده است.'}, status=status.HTTP_403_FORBIDDEN)
-            if site.is_active:  # taken
+            if site.domain_owner_id:  # taken
                 if user_id == site.domain_owner_id:
                     return Response({'error': 'این دامنه به اکانت شما متصل است.'}, status=status.HTTP_403_FORBIDDEN)
                 else:
@@ -33,3 +35,21 @@ class ConnectUser(APIView):
 
         except Site.DoesNotExist:
             return Response({'error': 'کلید دسترسی معتبر نمی باشد.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class DisconnectUser(APIView):
+    permission_classes = (AllowAny,)
+
+    def delete(self, request, *args, **kwargs):
+        user_id = request.data.get('id')
+
+        try:
+            site = Site.objects.get(domain_owner_id=user_id)
+            if site.is_active:
+                site.domain_owner_id = ''
+                site.save()
+                return Response({'message': 'حساب شما از دامنه جدا شد.' + f'\n{site.domain}'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
+        except Site.DoesNotExist:
+            return Response({'error': 'هیچ دامنه ای به حساب شما متصل نیست.'}, status=status.HTTP_404_NOT_FOUND)
