@@ -1,3 +1,4 @@
+import requests
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -49,6 +50,25 @@ class DisconnectUser(APIView):
                 site.domain_owner_id = ''
                 site.save()
                 return Response({'message': 'حساب شما از دامنه جدا شد.' + f'\n{site.domain}'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
+        except Site.DoesNotExist:
+            return Response({'error': 'هیچ دامنه ای به حساب شما متصل نیست.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ServerAvailable(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.data.get('id')
+        try:
+            site = Site.objects.get(domain_owner_id=user_id)
+            if site.is_active:
+                response = requests.get(f'{site.domain}/support/available/')
+                if response.status_code == 200:
+                    return Response({'message': 'سرور فعال است.'}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'سرور غیر فعال است.'})
             else:
                 return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
         except Site.DoesNotExist:
