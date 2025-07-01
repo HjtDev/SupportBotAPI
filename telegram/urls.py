@@ -10,4 +10,5 @@ urlpatterns = [
     path('disconnect/', views.DisconnectUser.as_view(), name='disconnect_user'),
     path('available/', views.ServerAvailable.as_view(), name='server_available'),
     path('server_load/', views.ServerLoad.as_view(), name='server_load'),
+    path('backup/', views.ServerBackup.as_view(), name='server_backup'),
 ]

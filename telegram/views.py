@@ -40,11 +40,9 @@ class DisconnectUser(APIView):
 
     def delete(self, request):
         site = request.site
-        if site.is_active:
-            site.domain_owner_id = ''
-            site.save()
-            return Response({'message': 'حساب شما از دامنه جدا شد.\n' + site.domain}, status=status.HTTP_200_OK)
-        return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
+        site.domain_owner_id = ''
+        site.save()
+        return Response({'message': 'حساب شما از دامنه جدا شد.\n' + site.domain}, status=status.HTTP_200_OK)
 
 
 class ServerAvailable(APIView):
@@ -68,3 +66,16 @@ class ServerLoad(APIView):
             data = response.json()
             return Response({'cpu': data.get('cpu'), 'memory': data.get('memory'), 'disk': data.get('disk')}, status=status.HTTP_200_OK)
         return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+class ServerBackup(APIView):
+    permission_classes = (SiteAccessPermission,)
+
+    def get(self, request):
+        site = request.site
+        response = requests.get(f'{site.domain}/support/backup/')
+        if response.status_code == 200:
+            return Response(response.content, status=status.HTTP_200_OK)
+        return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
