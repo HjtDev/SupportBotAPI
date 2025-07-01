@@ -5,14 +5,19 @@ from rest_framework.views import APIView
 from io import StringIO
 from django.core.management import call_command
 import psutil
+from .permissions import HasSupportAccess
 
 
 class AvailableAPIView(APIView):
+    permission_classes = [HasSupportAccess]
+
     def get(self, request, *args, **kwargs):
         return Response(status=status.HTTP_200_OK)
 
 
 class ServerLoadAPIView(APIView):
+    permission_classes = [HasSupportAccess]
+
     def get(self, request, *args, **kwargs):
         return Response({
             'cpu': psutil.cpu_percent(),
@@ -22,6 +27,8 @@ class ServerLoadAPIView(APIView):
 
 
 class ServerBackupAPIView(APIView):
+    permission_classes = [HasSupportAccess]
+
     def get(self, request, *args, **kwargs):
         out = StringIO()
         call_command('dumpdata', stdout=out, indent=2)

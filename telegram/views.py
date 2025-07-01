@@ -50,9 +50,11 @@ class ServerAvailable(APIView):
 
     def get(self, request):
         site = request.site
-        response = requests.get(f'{site.domain}/support/available/')
+        response = requests.get(f'{site.domain}/support/available/', data={'access_key': site.access_key})
         if response.status_code == 200:
             return Response({'message': 'سرور فعال است.'}, status=status.HTTP_200_OK)
+        if response.status_code == 503:
+            return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response({'message': 'سرور غیر فعال است.'})
 
 
@@ -61,7 +63,7 @@ class ServerLoad(APIView):
 
     def get(self, request):
         site = request.site
-        response = requests.get(f'{site.domain}/support/server_load/')
+        response = requests.get(f'{site.domain}/support/server_load/', data={'access_key': site.access_key})
         if response.status_code == 200:
             data = response.json()
             return Response({'cpu': data.get('cpu'), 'memory': data.get('memory'), 'disk': data.get('disk')}, status=status.HTTP_200_OK)
@@ -73,7 +75,7 @@ class ServerBackup(APIView):
 
     def get(self, request):
         site = request.site
-        response = requests.get(f'{site.domain}/support/backup/')
+        response = requests.get(f'{site.domain}/support/backup/', data={'access_key': site.access_key})
         if response.status_code == 200:
             return Response(response.content, status=status.HTTP_200_OK)
         return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
