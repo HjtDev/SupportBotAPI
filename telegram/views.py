@@ -73,3 +73,26 @@ class ServerAvailable(APIView):
                 return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
         except Site.DoesNotExist:
             return Response({'error': 'هیچ دامنه ای به حساب شما متصل نیست.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ServerLoad(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.data.get('id')
+        try:
+            site = Site.objects.get(domain_owner_id=user_id)
+            if site.is_active:
+                response = requests.get(f'{site.domain}/support/server_load/')
+                data = response.json()
+                if response.status_code == 200:
+                    return Response({'cpu': data.get('cpu'), 'memory': data.get('memory'), 'disk': data.get('disk')},
+                                    status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+            else:
+                return Response({'error': 'پشتیبانی این دامنه غیرفعال شده است.'}, status=status.HTTP_403_FORBIDDEN)
+        except Site.DoesNotExist:
+            return Response({'error': 'هیچ دامنه ای به حساب شما متصل نیست.'}, status=status.HTTP_404_NOT_FOUND)
+
