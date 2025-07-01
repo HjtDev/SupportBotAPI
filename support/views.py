@@ -6,13 +6,14 @@ from io import StringIO
 from django.core.management import call_command
 import psutil
 from .permissions import HasSupportAccess
+from .models import Server
 
 
 class AvailableAPIView(APIView):
     permission_classes = [HasSupportAccess]
 
     def get(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK if Server.objects.first().site_access else status.HTTP_423_LOCKED)
 
 
 class ServerLoadAPIView(APIView):
@@ -40,3 +41,25 @@ class ServerBackupAPIView(APIView):
         response = HttpResponse(json_bytes, content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename="backup.json"'
         return response
+
+
+class ServerOnAPIView(APIView):
+    permission_classes = [HasSupportAccess]
+
+    def get(self, request, *args, **kwargs):
+        server = Server.objects.first()
+        if not server.site_access:
+            server.site_access = True
+            server.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class ServerOffAPIView(APIView):
+    permission_classes = [HasSupportAccess]
+
+    def get(self, request, *args, **kwargs):
+        server = Server.objects.first()
+        if server.site_access:
+            server.site_access = False
+            server.save()
+        return Response(status=status.HTTP_200_OK)
