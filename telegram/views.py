@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from .models import Site
 from django.utils import timezone
 from .permissions import SiteAccessPermission
+from .serializers import SiteSerializer
 import requests
 
 
@@ -113,3 +114,11 @@ class ServerInformation(APIView):
             return Response(response.json(), status=status.HTTP_200_OK)
         return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
+
+class SupportInformation(APIView):
+    permission_classes = (SiteAccessPermission,)
+
+    def get(self, request):
+       site = request.site
+       serializer = SiteSerializer(site)
+       return Response(serializer.data, status=status.HTTP_200_OK)
