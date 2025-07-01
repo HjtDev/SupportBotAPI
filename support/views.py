@@ -7,6 +7,7 @@ from django.core.management import call_command
 import psutil
 from .permissions import HasSupportAccess
 from .models import Server
+from random import randint
 
 
 class AvailableAPIView(APIView):
@@ -63,3 +64,17 @@ class ServerOffAPIView(APIView):
             server.site_access = False
             server.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class ServerInfoAPIView(APIView):
+    permission_classes = [HasSupportAccess]
+
+    def get(self, request, *args, **kwargs):
+        return Response({
+            'فروش کل': randint(0, 1000),
+            'فروش این ماه': randint(0, 1000),
+            'بازدید های سایت': randint(0, 1000),
+            'تعداد کاربران': randint(0, 1000),
+            'پرفروش ترین محصول': randint(0, 1000),
+            'تعداد کامنت های جدید': randint(0, 1000)
+        }, status=status.HTTP_200_OK)

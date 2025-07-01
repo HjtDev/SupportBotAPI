@@ -13,4 +13,5 @@ urlpatterns = [
     path('backup/', views.ServerBackup.as_view(), name='server_backup'),
     path('on/', views.ServerOn.as_view(), name='server_on'),
     path('off/', views.ServerOff.as_view(), name='server_off'),
+    path('info/', views.ServerInformation.as_view(), name='server_info'),
 ]

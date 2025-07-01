@@ -102,3 +102,14 @@ class ServerOff(APIView):
             return Response({'message': 'سرور خاموش شد.'}, status=status.HTTP_200_OK)
         return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
+
+class ServerInformation(APIView):
+    permission_classes = (SiteAccessPermission,)
+
+    def get(self, request):
+        site = request.site
+        response = requests.get(f'{site.domain}/support/info/', data={'access_key': site.access_key})
+        if response.status_code == 200:
+            return Response(response.json(), status=status.HTTP_200_OK)
+        return Response({'error': 'اتصال با سرور برقرار نشد.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
