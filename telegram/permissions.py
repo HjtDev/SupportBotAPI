@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
@@ -14,6 +15,12 @@ class SiteNotActive(PermissionDenied):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = 'پشتیبانی این دامنه غیر فعال شده است.'
     default_code = 'site_not_active'
+
+
+class SiteSupportExpired(PermissionDenied):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = 'پشتیبانی این سایت به پایان رسیده است.'
+    default_code = 'site_expired'
 
 
 class UserIDNotProvided(PermissionDenied):
@@ -33,6 +40,9 @@ class SiteAccessPermission(BasePermission):
             raise SiteDoesNotExist()
         if not site.is_active:
             raise SiteNotActive()
+        if timezone.now() > site.expire_at:
+            raise SiteSupportExpired()
+
         request.site = site
         request.user_id = user_id
         return True
